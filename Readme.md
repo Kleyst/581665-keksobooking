@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Виктор Бухальцев](https://up.htmlacademy.ru/javascript/12/user/581665).
-* Наставник: `Неизвестно`.
+* Наставник: [Игорь Антонов].
 
 ---
 
