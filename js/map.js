@@ -1,18 +1,51 @@
 'use strict';
 
 var LEASED_PROPERTIES_NUMBER = 8;
-var LEASED_PROPERTIES_TITLES = ['Большая уютная квартира', 'Маленькая неуютная квартира', 'Огромный прекрасный дворец', 'Маленький ужасный дворец', 'Красивый гостевой домик', 'Некрасивый негостеприимный домик', 'Уютное бунгало далеко от моря', 'Неуютное бунгало по колено в воде'];
+var LEASED_PROPERTIES_TITLES = [
+  'Большая уютная квартира',
+  'Маленькая неуютная квартира',
+  'Огромный прекрасный дворец',
+  'Маленький ужасный дворец',
+  'Красивый гостевой домик',
+  'Некрасивый негостеприимный домик',
+  'Уютное бунгало далеко от моря',
+  'Неуютное бунгало по колено в воде'];
 var LEASED_PROPERTIES_PRICE_MIN = 1000;
 var LEASED_PROPERTIES_PRICE_MAX = 1000000;
-var LEASED_PROPERTIES_TYPES = ['flat', 'house', 'bungalo'];
+var LEASED_PROPERTIES_TYPES = [
+  'flat',
+  'house',
+  'bungalo'];
 var LEASED_PROPERTIES_ROOMS_MIN = 1;
 var LEASED_PROPERTIES_ROOMS_MAX = 5;
 var LEASED_PROPERTIES_GUESTS_MAX = 10;
-var LEASED_PROPERTIES_CHECKIN_ARRAY = ['12:00', '13:00', '14:00'];
-var LEASED_PROPERTIES_CHECKOUT_ARRAY = ['12:00', '13:00', '14:00'];
-var LEASED_PROPERTIES_FEAUTURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
+var LEASED_PROPERTIES_CHECKIN_ARRAY = [
+  '12:00',
+  '13:00',
+  '14:00'];
+var LEASED_PROPERTIES_CHECKOUT_ARRAY = [
+  '12:00',
+  '13:00',
+  '14:00'];
+var LEASED_PROPERTIES_FEAUTURES = [
+  'wifi',
+  'dishwasher',
+  'parking',
+  'washer',
+  'elevator',
+  'conditioner'];
 var LEASED_PROPERTIES_DESCRIPTION = '';
-var LEASED_PROPERTIES_PHOTOS = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
+var LEASED_PROPERTIES_PHOTOS = [
+  'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
+  'http://o0.github.io/assets/images/tokyo/hotel2.jpg',
+  'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
+
+var AUTHOR_AVATAR_FOLDER = 'img/avatars/';
+var AUTHOR_AVATAR_FILE_FORMAT = '.png';
+var AUTHOR_AVATAR_WIDTH = 40;
+var AUTHOR_AVATAR_HEIGHT = 40;
+var PROPERTY_PHOTO_WIDTH = 60;
+var PROPERTY_PHOTO_HEIGHT = 60;
 
 var LOCATION_X_MIN = 300;
 var LOCATION_X_MAX = 900;
@@ -21,8 +54,7 @@ var LOCATION_Y_MAX = 500;
 
 var randomInteger = function (min, max) {
   var rand = min - 0.5 + Math.random() * (max - min + 1);
-  rand = Math.round(rand);
-  return rand;
+  return Math.round(rand);
 };
 
 var shuffleArray = function (array) {
@@ -35,10 +67,10 @@ var shuffleArray = function (array) {
   return array;
 };
 
-var generateAvatarsURL = function (length) {
+var generateAvatarsURL = function (count) {
   var numbers = [];
 
-  for (var i = 0; i < length; ++i) {
+  for (var i = 0; i < count; ++i) {
     numbers [i] = i + 1;
   }
 
@@ -46,19 +78,19 @@ var generateAvatarsURL = function (length) {
 
   var avatarsURL = [];
 
-  for (i = 0; i < length; ++i) {
-    avatarsURL.push('img/avatars/user0' + shiffledNumbers[i] + '.png');
+  for (i = 0; i < count; ++i) {
+    avatarsURL.push(AUTHOR_AVATAR_FOLDER + 'user0' + shiffledNumbers[i] + AUTHOR_AVATAR_FILE_FORMAT);
   }
 
   return avatarsURL;
 };
 
-var generateLeasedProperties = function (length) {
-  var avatarsURL = generateAvatarsURL(length);
+var generateLeasedProperties = function (count) {
+  var avatarsURL = generateAvatarsURL(count);
 
   var leasedProperties = [];
 
-  for (var i = 0; i < length; ++i) {
+  for (var i = 0; i < count; ++i) {
     var shuffledFeatures = shuffleArray(LEASED_PROPERTIES_FEAUTURES);
     var propertyFeatures = [];
     for (var j = 0; i < randomInteger(0, LEASED_PROPERTIES_FEAUTURES.length - 1); ++j) {
@@ -96,25 +128,22 @@ var generateLeasedProperties = function (length) {
 
 var removeMapFaded = function () {
   var map = document.querySelector('.map');
-  map.classList.remove('.map--faded');
+  map.classList.remove('map--faded');
 };
 
 var createPinFromData = function (data) {
-  var button = document.createElement('button');
-  button.className = 'map__pin';
-  var x = data.location.x;
-  var y = data.location.y;
-  button.style = 'left: ' + x + 'px; top: ' + y + 'px;';
+  var pinTemplate = document.querySelector('template').content.querySelector('.map__pin');
+  var pin = pinTemplate.cloneNode(true);
+  pin.style.left = data.location.x + 'px';
+  pin.style.top = data.location.y + 'px';
 
-  var img = document.createElement('img');
+  var img = pin.querySelector('img');
   img.src = data.author.avatarURL;
-  img.width = 40;
-  img.height = 40;
+  img.width = AUTHOR_AVATAR_WIDTH;
+  img.height = AUTHOR_AVATAR_HEIGHT;
   img.draggable = 'false';
 
-  button.appendChild(img);
-
-  return button;
+  return pin;
 };
 
 var renderPins = function (numberOfPins, data) {
@@ -126,13 +155,10 @@ var renderPins = function (numberOfPins, data) {
   mapPins.appendChild(pins);
 };
 
-var getPropertyType = function (type) {
-  if (type === 'flat') {
-    return 'Квартира';
-  } else if (type === 'bungalo') {
-    return 'Бунгало';
-  }
-  return 'Дом';
+var appartmentsTypes = {
+  house: 'Дом',
+  flat: 'Квартира',
+  bungalo: 'Бунгало'
 };
 
 var getLastPartOfString = function (string, separator) {
@@ -142,27 +168,30 @@ var getLastPartOfString = function (string, separator) {
 
 var renderAd = function (property) {
 
-  var ad = document.querySelector('template').content.querySelector('.map__card.popup').cloneNode(true);
-
+  var adTemplate = document.querySelector('template').content.querySelector('.map__card.popup');
+  var ad = adTemplate.cloneNode(true);
   var paragraphs = ad.querySelectorAll('p');
   var ulList = ad.querySelectorAll('ul');
 
-  ad.querySelector('img').src = property.author.avatarURL;
+  ad.querySelectorAll('img')[0].src = property.author.avatarURL;
   ad.querySelector('h3').textContent = property.author.title;
   ad.querySelector('small').textContent = property.author.adress;
   ad.querySelector('.popup__price').textContent = property.offer.price + ' ночь';
-  ad.querySelector('h4').textContent = getPropertyType(property.offer.type);
-  paragraphs[2].textContent = property.offer.rooms + ' комнаты для ' + property.offer.guests + ' гостей';
-  paragraphs[3].textContent = 'Заезд после ' + property.offer.checkin + ', выезд до ' + property.offer.checkout;
+  ad.querySelector('h4').textContent = appartmentsTypes[property.offer.type];
+  paragraphs[2].textContent = 'Комнат: ' + property.offer.rooms + ' для ' + property.offer.guests + ' гостей';
+  paragraphs[3].textContent = 'Заезд: ' + property.offer.checkin + ', выезд: ' + property.offer.checkout;
 
-  var liFeatures = ulList[0].querySelectorAll('li');
+  var liTemplateFeatures = adTemplate.querySelectorAll('ul')[0].querySelectorAll('li');
 
-  for (var i = 0; i < liFeatures.length; ++i) {
-    liFeatures[i].style.visibility = 'hidden';
-    var feature = getLastPartOfString(liFeatures[i].className, '--');
+  while (ulList[0].firstChild) {
+    ulList[0].removeChild(ulList[0].firstChild);
+  }
+
+  for (var i = 0; i < liTemplateFeatures.length; ++i) {
+    var feature = getLastPartOfString(liTemplateFeatures[i].className, '--');
     for (var j = 0; j < property.offer.features.length; ++j) {
       if (feature === property.offer.features[j]) {
-        liFeatures[i].style.visibility = 'visible';
+        ulList[0].appendChild(liTemplateFeatures[i]);
       }
     }
   }
@@ -170,15 +199,17 @@ var renderAd = function (property) {
   paragraphs[4].textContent = property.offer.description;
 
   for (i = 0; i < property.offer.photos.length - 1; ++i) {
-    var liPhoto = document.createElement('li');
-    ulList[1].appendChild(liPhoto);
+    ulList[1].appendChild(document.createElement('li'));
   }
-
   var liPhotos = ulList[1].querySelectorAll('li');
+  liPhotos[0].querySelector('img').remove();
 
   for (i = 0; i < liPhotos.length; ++i) {
-    var photoSrc = document.createElement('src');
-    photoSrc.textContent = property.offer.photos[i];
+    var photoSrc = document.createElement('img');
+    photoSrc.src = property.offer.photos[i];
+    photoSrc.width = PROPERTY_PHOTO_WIDTH;
+    photoSrc.height = PROPERTY_PHOTO_HEIGHT;
+    liPhotos[i].appendChild(photoSrc);
   }
 
   var beforeDiv = document.querySelector('.map__filters-container');
