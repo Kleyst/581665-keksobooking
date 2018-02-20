@@ -52,7 +52,7 @@ var LOCATION_X_MAX = 900;
 var LOCATION_Y_MIN = 150;
 var LOCATION_Y_MAX = 500;
 
-var mainPinHeight = 70;
+var MAIN_PIN_HEIGHT = 70;
 
 var randomInteger = function (min, max) {
   var rand = min - 0.5 + Math.random() * (max - min + 1);
@@ -243,7 +243,7 @@ var mapPinMainMouseupHandler = function (evt) {
   document.querySelector('.map__pin--main').removeEventListener('mouseup', mapPinMainMouseupHandler);
   triggerActiveState();
   var map = document.querySelector('.map');
-  setAddressValue(evt.pageX - map.offsetLeft, evt.pageY - map.offsetTop + mainPinHeight / 2);
+  setAddressValue(evt.pageX - map.offsetLeft, evt.pageY - map.offsetTop + MAIN_PIN_HEIGHT / 2);
 
   var leasedProperties = generateLeasedProperties(LEASED_PROPERTIES_NUMBER);
 
