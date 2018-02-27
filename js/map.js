@@ -54,6 +54,44 @@ var LOCATION_Y_MAX = 500;
 
 var MAIN_PIN_HEIGHT = 70;
 
+var ESC_KEYCODE = 27;
+
+var NOTICE_TITLE_MIN_LENGTH = 30;
+var NOTICE_TITLE_MAX_LENGTH = 100;
+var NOTICE_TITLE_PATTERN = '.{30,100}';
+
+
+var NOTICE_PRICE_MAX = 1000000;
+
+var APPARTMENTS_TYPES = {
+  bungalo: 'Лачуга',
+  flat: 'Квартира',
+  house: 'Дом',
+  palace: 'Дворец'
+};
+
+var NOTICE_PRICE_MIN_FOR_TYPE = {
+  bungalo: 0,
+  flat: 1000,
+  house: 5000,
+  palace: 10000
+};
+
+var NOTICE_TITLE_ERROR_MESSAGE = 'Заголовок должн быть не меньше ' + NOTICE_TITLE_MIN_LENGTH
++ ' символов и не больше ' + NOTICE_TITLE_MAX_LENGTH + ' символов';
+var NOTICE_PRICE_ERROR_MESSAGE = 'Цена за ночь не указана или ниже минимуна для выбранного типа жилья';
+var NOTICE_GUESTS_ERROR_MESSAGE = 'Число гостей не соответствует числу комнат';
+var NOTICE_SPAM_ERROR_CLASS = 'error__spam';
+var NOTICE_SPAM_ERROR_COLOR = 'red';
+var NOTICE_ELEMENT_ERROR_BORDERCOLOR = 'red';
+
+var GUESTS_FOR_ROOMS = {
+  1: [1],
+  2: [1, 2],
+  3: [1, 2, 3],
+  100: [0]
+};
+
 var randomInteger = function (min, max) {
   var rand = min - 0.5 + Math.random() * (max - min + 1);
   return Math.round(rand);
@@ -143,23 +181,22 @@ var createPinFromData = function (data) {
   return pin;
 };
 
-var appartmentsTypes = {
-  house: 'Дом',
-  flat: 'Квартира',
-  bungalo: 'Бунгало'
-};
-
 var getLastPartOfString = function (string, separator) {
   var position = string.search(separator) + separator.length;
   return string.substring(position, string.length);
 };
 
+var removeAllChildren = function (element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+};
+
 var renderFeatures = function (liTemplate, ad, property) {
   var ul = ad.querySelector('.popup__features');
 
-  while (ul.firstChild) {
-    ul.removeChild(ul.firstChild);
-  }
+  removeAllChildren(ul);
+
   for (var i = 0; i < liTemplate.length; ++i) {
     var feature = getLastPartOfString(liTemplate[i].className, '--');
     for (var j = 0; j < property.offer.features.length; ++j) {
@@ -187,6 +224,17 @@ var renderPhotos = function (ad, property) {
   }
 };
 
+var buttonCloseClickHandler = function () {
+  document.querySelector('.map__card.popup').remove();
+};
+
+var adKeydownEscHandler = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    document.querySelector('.map__card.popup').remove();
+  }
+  document.removeEventListener('keydown', adKeydownEscHandler);
+};
+
 var renderAd = function (property) {
   var previousAd = document.querySelector('.map__card.popup');
   if (previousAd !== null) {
@@ -199,7 +247,7 @@ var renderAd = function (property) {
   ad.querySelector('h3').textContent = property.author.title;
   ad.querySelector('small').textContent = property.author.adress;
   ad.querySelector('.popup__price').textContent = property.offer.price + ' ночь';
-  ad.querySelector('h4').textContent = appartmentsTypes[property.offer.type];
+  ad.querySelector('h4').textContent = APPARTMENTS_TYPES[property.offer.type];
 
   ad.querySelector('p:nth-of-type(3)').textContent = 'Комнат: ' + property.offer.rooms + ' для ' + property.offer.guests + ' гостей';
   ad.querySelector('p:nth-of-type(4)').textContent = 'Заезд: ' + property.offer.checkin + ', выезд: ' + property.offer.checkout;
@@ -209,11 +257,148 @@ var renderAd = function (property) {
   ad.querySelector('p:nth-of-type(5)').textContent = property.offer.description;
 
   renderPhotos(ad, property);
+
+  var buttonClose = ad.querySelector('.popup__close');
+  buttonClose.addEventListener('click', buttonCloseClickHandler);
+  document.addEventListener('keydown', adKeydownEscHandler);
+
   var beforeDiv = document.querySelector('.map__filters-container');
   var parentDiv = document.querySelector('.map');
   parentDiv.insertBefore(ad, beforeDiv);
 };
 
+var noticeTimeinChangeHandler = function (evt) {
+  document.querySelector('select[name ="timeout"]').value = evt.target.value;
+};
+
+var noticeTimeoutChangeHandler = function (evt) {
+  document.querySelector('select[name ="timein"]').value = evt.target.value;
+};
+
+var noticeRoomsChangeHandler = function () {
+  var notice = document.querySelector('.notice');
+  var noticeRooms = notice.querySelector('select[name="rooms"]');
+
+  var capacitySelect = document.querySelector('select[name ="capacity"]');
+  for (var i = 0; i < capacitySelect.length; ++i) {
+    capacitySelect.options[i].disabled = true;
+  }
+
+  var capacity = GUESTS_FOR_ROOMS[noticeRooms.value];
+  for (var j = 0; j < capacity.length; ++j) {
+    for (i = 0; i < capacitySelect.length; ++i) {
+      var capacitySelectValue = capacitySelect[i].value;
+      var capacityValue = capacity[j];
+      if (capacitySelectValue === capacityValue.toString()) {
+        capacitySelect.options[i].disabled = false;
+      }
+    }
+  }
+};
+
+var formResetClickHandler = function () {
+  triggerInactiveState();
+  var pins = document.querySelectorAll('.map__pin');
+  for (var i = 0; i < pins.length; ++i) {
+    if (pins[i].classList[1] !== 'map__pin--main') {
+      pins[i].remove();
+    } else {
+      pins[i].addEventListener('mouseup', mapPinMainMouseupHandler);
+    }
+  }
+  var map = document.querySelector('.map');
+  var pinX = map.clientWidth / 2;
+  var pinY = (map.clientHeight + map.scrollTop) / 2;
+  setAddressValue(pinX, pinY);
+};
+
+var noticeTypeChangeHandler = function (evt) {
+  var notice = document.querySelector('.notice');
+  var noticePrice = notice.querySelector('input[name="price"]');
+  noticePrice.min = NOTICE_PRICE_MIN_FOR_TYPE[evt.target.value];
+};
+
+var showErrorMessage = function (element, message) {
+  element.style.borderColor = NOTICE_ELEMENT_ERROR_BORDERCOLOR;
+  var spam = document.createElement('spam');
+  spam.style.color = NOTICE_SPAM_ERROR_COLOR;
+  spam.className = NOTICE_SPAM_ERROR_CLASS;
+  spam.textContent = message;
+  var next = element.nextSibling;
+  var parent = element.parentNode;
+  parent.insertBefore(spam, next);
+};
+
+var formSubmitHandler = function (evt) {
+  var notice = document.querySelector('.notice');
+
+  var spamArray = notice.querySelectorAll('.' + NOTICE_SPAM_ERROR_CLASS);
+
+  for (var i = 0; i < spamArray.length; ++i) {
+    spamArray[i].previousSibling.style.borderColor = '';
+    spamArray[i].remove();
+  }
+
+  var noticeTitle = notice.querySelector('input[name="title"]');
+  if (noticeTitle.value === '' || noticeTitle.value.length < NOTICE_TITLE_MIN_LENGTH ||
+   noticeTitle.value.length > NOTICE_TITLE_MAX_LENGTH) {
+    evt.preventDefault();
+    showErrorMessage(noticeTitle, NOTICE_TITLE_ERROR_MESSAGE);
+  }
+
+  var noticeGuests = notice.querySelector('select[name="capacity"]');
+  if (noticeGuests.options[noticeGuests.selectedIndex].disabled === true) {
+    evt.preventDefault();
+    showErrorMessage(noticeGuests, NOTICE_GUESTS_ERROR_MESSAGE);
+  }
+
+  var noticePrice = notice.querySelector('input[name="price"]');
+  if (noticePrice.value < noticePrice.min) {
+    evt.preventDefault();
+    showErrorMessage(noticePrice, NOTICE_PRICE_ERROR_MESSAGE);
+  }
+};
+
+var setActiveForm = function () {
+  var notice = document.querySelector('.notice');
+
+  var noticeTitle = notice.querySelector('input[name="title"]');
+  noticeTitle.required = true;
+  noticeTitle.pattern = NOTICE_TITLE_PATTERN;
+
+  var noticeType = notice.querySelector('select[name="type"]');
+  noticeType.addEventListener('change', noticeTypeChangeHandler);
+
+  var noticePrice = notice.querySelector('input[name="price"]');
+  noticePrice.required = true;
+  noticePrice.min = NOTICE_PRICE_MIN_FOR_TYPE[noticeType.querySelector('option:checked').value];
+  noticePrice.max = NOTICE_PRICE_MAX;
+
+  var noticeAddress = notice.querySelector('input[name="address"]');
+  noticeAddress.readOnly = true;
+
+  var noticeTimein = notice.querySelector('select[name="timein"]');
+  noticeTimein.addEventListener('change', noticeTimeinChangeHandler);
+
+  var noticeTimeout = notice.querySelector('select[name="timeout"]');
+  noticeTimeout.addEventListener('change', noticeTimeoutChangeHandler);
+
+  var noticeRooms = notice.querySelector('select[name="rooms"]');
+  noticeRooms.addEventListener('change', noticeRoomsChangeHandler);
+  noticeRoomsChangeHandler();
+
+  var noticeGuests = notice.querySelector('select[name="capacity"]');
+  var guests = GUESTS_FOR_ROOMS[noticeRooms[noticeRooms.selectedIndex].value];
+  for (var i = 0; i < noticeGuests.options.length; ++i) {
+    if (noticeGuests.options[i].value === guests[0].toString()) {
+      noticeGuests.options.selectedIndex = i;
+    }
+  }
+
+  notice.querySelector('.form__reset').addEventListener('click', formResetClickHandler);
+
+  notice.addEventListener('submit', formSubmitHandler, false);
+};
 
 var triggerActiveState = function () {
   document.querySelector('.map').classList.remove('map--faded');
@@ -223,12 +408,14 @@ var triggerActiveState = function () {
   for (var i = 0; i < fieldsets.length; ++i) {
     fieldsets[i].disabled = false;
   }
+  setActiveForm();
 };
 
 var triggerInactiveState = function () {
   document.querySelector('.map').classList.add('map--faded');
-  document.querySelector('.notice__form').classList.add('notice__form--disabled');
-
+  var form = document.querySelector('.notice__form');
+  form.classList.add('notice__form--disabled');
+  form.noValidate = true;
   var fieldsets = document.querySelectorAll('fieldset');
   for (var i = 0; i < fieldsets.length; ++i) {
     fieldsets[i].disabled = true;
@@ -258,8 +445,7 @@ var renderPins = function (numberOfPins, data) {
   var pins = document.createDocumentFragment();
   for (var i = 0; i < numberOfPins; ++i) {
     var pin = createPinFromData(data[i]);
-    var evt;
-    pin.addEventListener('click', pinClickHandler.bind(evt, data[i]));
+    pin.addEventListener('click', pinClickHandler.bind(null, data[i]));
     pins.appendChild(pin);
   }
   var mapPins = document.querySelector('.map__pins');
