@@ -1,8 +1,10 @@
 'use strict';
 
 (function () {
-  var PROPERTY_PHOTO_WIDTH = 60;
-  var PROPERTY_PHOTO_HEIGHT = 60;
+  var PHOTO = {
+    WIDTH: 60,
+    HEIGHT: 60
+  };
 
   var APPARTMENTS_TYPES = {
     bungalo: 'Лачуга',
@@ -34,13 +36,14 @@
     }
     var liPhotos = ul.querySelectorAll('li');
     liPhotos[0].querySelector('img').remove();
-
-    for (i = 0; i < liPhotos.length; ++i) {
-      var photoSrc = document.createElement('img');
-      photoSrc.src = property.offer.photos[i];
-      photoSrc.width = PROPERTY_PHOTO_WIDTH;
-      photoSrc.height = PROPERTY_PHOTO_HEIGHT;
-      liPhotos[i].appendChild(photoSrc);
+    if (property.offer.photos.length > 0) {
+      for (i = 0; i < liPhotos.length; ++i) {
+        var photoSrc = document.createElement('img');
+        photoSrc.src = property.offer.photos[i];
+        photoSrc.width = PHOTO.WIDTH;
+        photoSrc.height = PHOTO.HEIGHT;
+        liPhotos[i].appendChild(photoSrc);
+      }
     }
   };
 
@@ -64,9 +67,9 @@
       var adTemplate = document.querySelector('template').content.querySelector('.map__card.popup');
       var ad = adTemplate.cloneNode(true);
 
-      ad.querySelectorAll('img')[0].src = property.author.avatarURL;
-      ad.querySelector('h3').textContent = property.author.title;
-      ad.querySelector('small').textContent = property.author.adress;
+      ad.querySelectorAll('img')[0].src = property.author.avatar;
+      ad.querySelector('h3').textContent = property.offer.title;
+      ad.querySelector('small').textContent = property.offer.address;
       ad.querySelector('.popup__price').textContent = property.offer.price + ' ночь';
       ad.querySelector('h4').textContent = APPARTMENTS_TYPES[property.offer.type];
 
