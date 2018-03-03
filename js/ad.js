@@ -40,13 +40,13 @@
     });
     var liPhotos = ulPictures.querySelectorAll('li');
     liPhotos[TEMPLATE_PHOTO_INDEX].querySelector('img').remove();
-    liPhotos.forEach(function (liPhoto, i, liPhotos) {
+    for (var i = 0; i < liPhotos.length; ++i) {
       var photoSrc = document.createElement('img');
       photoSrc.src = property.offer.photos[i];
       photoSrc.width = PHOTO.WIDTH;
       photoSrc.height = PHOTO.HEIGHT;
-      liPhoto.appendChild(photoSrc);
-    });
+      liPhotos[i].appendChild(photoSrc);
+    }
   };
 
   var buttonCloseClickHandler = function () {
