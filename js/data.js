@@ -1,4 +1,5 @@
 'use strict';
+
 (function () {
   var AUTHOR_AVATAR_FOLDER = 'img/avatars/';
   var AUTHOR_AVATAR_FILE_FORMAT = '.png';
@@ -41,7 +42,7 @@
     'washer',
     'elevator',
     'conditioner'];
-  var LEASED_PROPERTIES_DESCRIPTION = '';
+  var LEASED_PROPERTIES_DESCRIPTION = 'Маленькая чистая квартира на краю парка. Без интеренета, регистрации и СМС.';
   var LEASED_PROPERTIES_PHOTOS = [
     'http://o0.github.io/assets/images/tokyo/hotel1.jpg',
     'http://o0.github.io/assets/images/tokyo/hotel2.jpg',

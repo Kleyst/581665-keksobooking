@@ -4,9 +4,12 @@
   var LEASED_PROPERTIES_NUMBER = 8;
 
   var MAIN_PIN_HEIGHT = 70;
+  var MAIN_PIN_CIRCLE_RADIUS = 30;
+
+  var MAP_BOTTOM_BORDER = 105;
+  var MAP_TOP_BORDER = 125;
 
   var NOTICE_TITLE_PATTERN = '.{30,100}';
-
   var NOTICE_PRICE_MAX = 1000000;
 
   var pinX;
@@ -58,7 +61,6 @@
 
       notice.addEventListener('submit', window.notice.formSubmitHandler, false);
     },
-
     mapPinMainMouseupHandler: function (evt) {
       document.querySelector('.map__pin--main').removeEventListener('mouseup', window.map.mapPinMainMouseupHandler);
       window.states.triggerActiveState();
@@ -71,6 +73,82 @@
 
       window.pin.renderPins(LEASED_PROPERTIES_NUMBER, leasedProperties);
     },
+    mapPinMainMouseDownHandler: function (evt) {
+      evt.preventDefault();
+
+      var startCoords = {
+        x: evt.clientX,
+        y: evt.clientY
+      };
+
+      var mouseMoveHandler = function (moveEvt) {
+        moveEvt.preventDefault();
+        var mapRectangle = document.querySelector('.map').getBoundingClientRect();
+        var MAP_WIDTH = mapRectangle.width;
+        var MAP_HEIGHT = mapRectangle.height - window.pageYOffset;
+        var widthMin = (window.innerWidth - MAP_WIDTH) / 2;
+        var widthMax = window.innerWidth - widthMin;
+        if (moveEvt.clientX - MAIN_PIN_CIRCLE_RADIUS > widthMin &&
+          moveEvt.clientX + MAIN_PIN_CIRCLE_RADIUS < widthMax &&
+          moveEvt.clientY + MAP_BOTTOM_BORDER < MAP_HEIGHT &&
+          moveEvt.clientY > MAP_TOP_BORDER) {
+          moveEvt.preventDefault();
+
+          mainPin = document.querySelector('.map__pin--main');
+
+          var shift = {
+            x: startCoords.x - moveEvt.clientX,
+            y: startCoords.y - moveEvt.clientY
+          };
+          startCoords = {
+            x: moveEvt.clientX,
+            y: moveEvt.clientY
+          };
+          var newX = mainPin.offsetLeft - shift.x;
+          var newY = mainPin.offsetTop - shift.y;
+          var adressValueY = newY + MAIN_PIN_HEIGHT / 2;
+          document.querySelector('input[name="address"]').value = newX + ', ' + adressValueY;
+          mainPin.style.top = newY + 'px';
+          mainPin.style.left = newX + 'px';
+        }
+      };
+
+      var mouseUpHandler = function (upEvt) {
+        upEvt.preventDefault();
+        var mapRectangle = document.querySelector('.map').getBoundingClientRect();
+        var MAP_WIDTH = mapRectangle.width;
+        var MAP_HEIGHT = mapRectangle.height - window.pageYOffset;
+        var widthMin = (window.innerWidth - MAP_WIDTH) / 2;
+        var widthMax = window.innerWidth - widthMin;
+        if (upEvt.clientX - MAIN_PIN_CIRCLE_RADIUS > widthMin &&
+          upEvt.clientX + MAIN_PIN_CIRCLE_RADIUS < widthMax &&
+          upEvt.clientY + MAP_BOTTOM_BORDER < MAP_HEIGHT &&
+          upEvt.clientY > MAP_TOP_BORDER) {
+          upEvt.preventDefault();
+
+          mainPin = document.querySelector('.map__pin--main');
+
+          var shift = {
+            x: startCoords.x - upEvt.clientX,
+            y: startCoords.y - upEvt.clientY
+          };
+          startCoords = {
+            x: upEvt.clientX,
+            y: upEvt.clientY
+          };
+          var newX = mainPin.offsetLeft - shift.x;
+          var newY = mainPin.offsetTop - shift.y;
+          var adressValueY = newY + MAIN_PIN_HEIGHT / 2;
+          document.querySelector('input[name="address"]').value = newX + ', ' + adressValueY;
+          mainPin.style.top = newY + 'px';
+          mainPin.style.left = newX + 'px';
+        }
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+      };
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+    },
     setStartState: function () {
       window.states.triggerActiveState();
       window.states.triggerInactiveState();
@@ -79,6 +157,7 @@
       pinX = map.clientWidth / 2;
       pinY = (map.clientHeight + map.scrollTop) / 2;
       document.querySelector('input[name="address"]').value = pinX + ', ' + pinY;
+      mainPin.addEventListener('mousedown', window.map.mapPinMainMouseDownHandler);
       mainPin.addEventListener('mouseup', window.map.mapPinMainMouseupHandler);
     },
     formResetClickHandler: function () {
@@ -102,6 +181,10 @@
       pinX = map.clientWidth / 2;
       pinY = (map.clientHeight + map.scrollTop) / 2;
       document.querySelector('input[name="address"]').value = pinX + ', ' + pinY;
+      var ad = document.querySelector('.map__card.popup');
+      if (ad !== null) {
+        ad.remove();
+      }
     }
   };
 })();
