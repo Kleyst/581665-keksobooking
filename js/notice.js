@@ -1,19 +1,22 @@
 'use strict';
 
 (function () {
+  var TITLE = {
+    MIN: 30,
+    MAX: 100
+  };
+
   var NOTICE_ERROR_ELEMENT_BORDERCOLOR = 'red';
-  var NOTICE_TITLE_MIN_LENGTH = 30;
-  var NOTICE_TITLE_MAX_LENGTH = 100;
   var NOTICE_ERROR_GUESTS_MESSAGE = 'Число гостей не соответствует числу комнат';
-  var NOTICE_ERROR_TITLE_MESSAGE = 'Заголовок должн быть не меньше ' + NOTICE_TITLE_MIN_LENGTH
-  + ' символов и не больше ' + NOTICE_TITLE_MAX_LENGTH + ' символов';
+  var NOTICE_ERROR_TITLE_MESSAGE = 'Заголовок должн быть не меньше ' + TITLE.MIN
+  + ' символов и не больше ' + TITLE.MAX + ' символов';
   var NOTICE_ERROR_PRICE_MESSAGE = 'Цена за ночь не указана или ниже минимуна для выбранного типа жилья';
 
   var NOTICE_ERROR_COLOR = 'red';
 
   window.notice = {
     NOTICE_ERROR_CLASS: '__error',
-    NOTICE_PRICE_MIN_FOR_TYPE: {
+    MIN_PRICE_FOR_TYPE: {
       bungalo: 0,
       flat: 1000,
       house: 5000,
@@ -67,7 +70,7 @@
       var notice = document.querySelector('.notice');
       var noticePrice = notice.querySelector('input[name="price"]');
       var isMessageExists = document.querySelector('.' + noticePrice.id + window.notice.NOTICE_ERROR_CLASS) !== null;
-      noticePrice.min = window.notice.NOTICE_PRICE_MIN_FOR_TYPE[notice.querySelector('select[name="type"]').value];
+      noticePrice.min = window.notice.MIN_PRICE_FOR_TYPE[notice.querySelector('select[name="type"]').value];
       if (parseInt(noticePrice.value, 10) < parseInt(noticePrice.min, 10)) {
         if (!isMessageExists) {
           window.notice.showErrorMessage(noticePrice, noticePrice.id + window.notice.NOTICE_ERROR_CLASS, NOTICE_ERROR_PRICE_MESSAGE);
@@ -79,7 +82,7 @@
     noticeTypeChangeHandler: function (evt) {
       var notice = document.querySelector('.notice');
       var noticePrice = notice.querySelector('input[name="price"]');
-      noticePrice.min = window.notice.NOTICE_PRICE_MIN_FOR_TYPE[evt.target.value];
+      noticePrice.min = window.notice.MIN_PRICE_FOR_TYPE[evt.target.value];
     },
     showErrorMessage: function (element, errorClass, message) {
       element.style.borderColor = NOTICE_ERROR_ELEMENT_BORDERCOLOR;
@@ -120,6 +123,26 @@
       var noticeGuestsError = notice.querySelector('.' + noticeGuests.id + window.notice.NOTICE_ERROR_CLASS);
       if (noticeTitleError !== null || noticePriceError !== null || noticeGuestsError !== null) {
         evt.preventDefault();
+      } else {
+        evt.preventDefault();
+
+        var form = document.querySelector('.map__filters');
+        window.backend.upload(new FormData(form), function () {
+          var mainPin = document.querySelector('.map__pin--main');
+          window.notice.showErrorMessage(mainPin, mainPin + window.notice.NOTICE_ERROR_CLASS, 'данные успешно загружены');
+        }, function (errorMessage) {
+          var mainPin = document.querySelector('.map__pin--main');
+          window.notice.showErrorMessage(mainPin, mainPin + window.notice.NOTICE_ERROR_CLASS, errorMessage);
+        });
+        window.states.triggerInactiveState();
+        var pins = document.querySelectorAll('.map__pin');
+        for (var i = 0; i < pins.length; ++i) {
+          if (pins[i].classList[1] !== 'map__pin--main') {
+            pins[i].remove();
+          } else {
+            pins[i].addEventListener('mouseup', window.map.mapPinMainMouseupHandler);
+          }
+        }
       }
     },
     removeErrorMessage: function (element, errorClass) {
@@ -132,8 +155,8 @@
     noticeTitleCheckValidityHandler: function () {
       var notice = document.querySelector('.notice');
       var noticeTitle = notice.querySelector('input[name="title"]');
-      var isValidLength = noticeTitle.value.length >= NOTICE_TITLE_MIN_LENGTH &&
-      noticeTitle.value.length <= NOTICE_TITLE_MAX_LENGTH;
+      var isValidLength = noticeTitle.value.length >= TITLE.MIN &&
+      noticeTitle.value.length <= TITLE.MAX;
       var isTitleExists = noticeTitle.value !== '';
       var isMessageExists = document.querySelector('.' + noticeTitle.id + window.notice.NOTICE_ERROR_CLASS) !== null;
       if (!isTitleExists || !isValidLength) {
