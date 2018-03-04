@@ -277,7 +277,8 @@
         }
       }
     }
-    window.pin.renderPins(newProperties.length, newProperties);
+    var numberOfPinsToRender = newProperties.length > PROPERTIES_NUMBER ? PROPERTIES_NUMBER : newProperties.length;
+    window.pin.renderPins(numberOfPinsToRender, newProperties);
   };
 
 
