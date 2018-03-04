@@ -283,43 +283,43 @@
 
 
   var filterTypeChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterPriceChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterRoomsChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterGuestsChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesWifiChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesDishwasherChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesParkingChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesWasherChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesElevatorChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var filterFeaturesConditionerChangeHandler = function () {
-    renderPinsWithFilters();
+    window.debounce(renderPinsWithFilters);
   };
 
   var noticeGuestsCheckErrorMessageHandler = function () {
