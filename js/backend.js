@@ -3,7 +3,11 @@
 (function () {
   var SERVER_URL = 'https://js.dump.academy/keksobooking';
   var TIMEOUT = 10000;
-
+  var StatusMessage = {
+    404: 'Страница не найдена',
+    500: 'Внутренняя ошибка сервера',
+    default: 'Неизвестный статус'
+  };
   var setup = function (loadHandler, errorHandler) {
 
     var xhr = new XMLHttpRequest();
@@ -15,13 +19,13 @@
           loadHandler(xhr.response);
           break;
         case 404:
-          errorHandler('Страница не найдена');
+          errorHandler(StatusMessage['404']);
           break;
         case 500:
-          errorHandler('Внутренняя ошибка сервера');
+          errorHandler(StatusMessage['500']);
           break;
         default:
-          errorHandler('Неизвестный статус: ' + xhr.status + ' ' + xhr.statusText);
+          errorHandler(StatusMessage['default'] + ': ' + xhr.status + ' ' + xhr.statusText);
       }
     });
 
