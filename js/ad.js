@@ -37,17 +37,14 @@
   var renderPhotos = function (ad, property) {
     var ulPicturesfragment = document.createDocumentFragment();
     var ulPictures = ad.querySelector('.popup__pictures');
-    var arrayPhotos = property.offer.photos;
-    arrayPhotos.forEach(function () {
-      ulPicturesfragment.appendChild(document.createElement('li'));
-    });
-    var liPhotos = ulPicturesfragment.querySelector('li');
     for (var i = 0; i < property.offer.photos.length; ++i) {
+      var liPhoto = document.createElement('li');
       var photoSrc = document.createElement('img');
       photoSrc.src = property.offer.photos[i];
       photoSrc.width = Photo.Width;
       photoSrc.height = Photo.Height;
-      liPhotos.appendChild(photoSrc);
+      liPhoto.appendChild(photoSrc);
+      ulPicturesfragment.appendChild(liPhoto);
     }
     ulPictures.appendChild(ulPicturesfragment);
   };
