@@ -22,6 +22,8 @@
   var noticePrice = notice.querySelector('input[name="price"]');
   var noticeGuests = notice.querySelector('select[name="capacity"]');
   var noticeRooms = notice.querySelector('select[name="rooms"]');
+  var filtersContainer = document.querySelector('.map__filters-container');
+
   var FormInnerData = {
     TITLE: '',
     PRICE: '',
@@ -34,6 +36,63 @@
     FEATURES_CHECKED_ARRAY: ['false', 'fasle', 'false', 'false', 'fasle', 'false']
   };
 
+  var NOTICE_TITLE_PATTERN = '.{30,100}';
+  var NOTICE_PRICE_MAX = 1000000;
+
+  var setActiveForm = function () {
+    noticeTitle.required = true;
+    noticeTitle.pattern = NOTICE_TITLE_PATTERN;
+    noticeTitle.addEventListener('change', window.notice.noticeTitleCheckValidityHandler);
+
+    var noticeType = notice.querySelector('select[name="type"]');
+    noticeType.addEventListener('change', window.notice.noticeTypeChangeHandler);
+    noticeType.addEventListener('change', window.notice.noticePriceCheckValidityHandler);
+
+    noticePrice.required = true;
+    noticePrice.min = window.notice.MIN_PRICE_FOR_TYPE[noticeType.querySelector('option:checked').value];
+    noticePrice.max = NOTICE_PRICE_MAX;
+    noticePrice.addEventListener('change', window.notice.noticePriceCheckValidityHandler);
+
+    var noticeAddress = notice.querySelector('input[name="address"]');
+    noticeAddress.readOnly = true;
+
+    var noticeTimein = notice.querySelector('select[name="timein"]');
+    noticeTimein.addEventListener('change', window.notice.noticeTimeinChangeHandler);
+
+    var noticeTimeout = notice.querySelector('select[name="timeout"]');
+    noticeTimeout.addEventListener('change', window.notice.noticeTimeoutChangeHandler);
+
+    noticeRooms.addEventListener('change', window.notice.noticeRoomsDisableInvalidOptionsHandler);
+    noticeRooms.addEventListener('change', window.notice.noticeRoomsCheckValidityHandler);
+    window.notice.noticeRoomsDisableInvalidOptionsHandler();
+
+    var guests = window.notice.GUESTS_FOR_ROOMS[noticeRooms[noticeRooms.selectedIndex].value];
+    for (var i = 0; i < noticeGuests.options.length; ++i) {
+      if (noticeGuests.options[i].value === guests[0].toString()) {
+        noticeGuests.options.selectedIndex = i;
+      }
+    }
+    var filtersExceptFeatures = filtersContainer.querySelectorAll('.map__filter');
+    var filtersFeatures = filtersContainer.querySelectorAll('input[name="features"');
+
+    for (i = 0; i < filtersExceptFeatures.length; ++i) {
+      (function (index) {
+        filtersExceptFeatures[index].addEventListener('change', window.map.filterChangeHandler);
+      })(i);
+    }
+
+    for (i = 0; i < filtersFeatures.length; ++i) {
+      (function (index) {
+        filtersFeatures[index].addEventListener('change', window.map.filterChangeHandler);
+      })(i);
+    }
+
+    noticeGuests.addEventListener('change', noticeGuestsCheckErrorMessageHandler);
+
+    notice.querySelector('.form__reset').addEventListener('click', window.notice.formResetClickHandler);
+
+    notice.addEventListener('submit', window.notice.formSubmitHandler, false);
+  };
 
   var noticeTimeinChangeHandler = function (evtTimein) {
     document.querySelector('select[name ="timeout"]').value = evtTimein.target.value;
@@ -41,6 +100,10 @@
 
   var noticeTimeoutChangeHandler = function (evtTimeout) {
     document.querySelector('select[name ="timein"]').value = evtTimeout.target.value;
+  };
+
+  var noticeGuestsCheckErrorMessageHandler = function () {
+    window.notice.noticeGuestsCheckErrorMessage();
   };
 
   var noticeRoomsDisableInvalidOptionsHandler = function () {
@@ -86,6 +149,7 @@
   var noticeTypeChangeHandler = function (evtType) {
     noticePrice.min = window.notice.MIN_PRICE_FOR_TYPE[evtType.target.value];
   };
+
   var showDownloadErrorMessage = function (message, element) {
     var div = document.createElement('div');
     div.style.color = DOWNLOAD_MESSAGE_COLOR;
@@ -96,12 +160,12 @@
     div.style.padding = '5px';
     div.style.borderRadius = '5px';
     div.style.marginTop = '5px';
-    var elementRectangle = element.getBoundingClientRect();
-    div.style.left = elementRectangle.left + 'px';
+    div.style.left = window.innerWidth / 3 + 'px';
     var next = element.nextSibling;
     var parent = element.parentNode;
     parent.insertBefore(div, next);
   };
+
   var showErrorMessage = function (element, messageClass, message) {
     element.style.borderColor = NOTICE_ERROR_ELEMENT_BORDERCOLOR;
     var div = document.createElement('div');
@@ -126,6 +190,21 @@
     parent.insertBefore(triangle, next);
   };
 
+  var setInnerData = function () {
+    noticeTitle.value = FormInnerData.TITLE;
+    noticePrice.value = FormInnerData.PRICE;
+    noticeGuests.selectedIndex = FormInnerData.CAPACITY;
+    noticeRooms.selectedIndex = FormInnerData.ROOMS;
+    notice.querySelector('textarea[name="description"]').value = FormInnerData.DESCRIPTION;
+    notice.querySelector('select[name="type"]').selectedIndex = FormInnerData.TYPE;
+    notice.querySelector('select[name="timein"]').selectedIndex = FormInnerData.TIMEIN;
+    notice.querySelector('select[name="timeout"]').selectedIndex = FormInnerData.TIMEOUT;
+    var features = notice.querySelectorAll('input[type=checkbox]');
+    for (var i = 0; i < features.length; ++i) {
+      features[i].checked = !FormInnerData.FEATURES_CHECKED_ARRAY[i];
+    }
+  };
+
   var formSubmitHandler = function (evtSubmit) {
     evtSubmit.preventDefault();
     if (noticePrice.value === '') {
@@ -140,20 +219,7 @@
     var form = document.querySelector('.notice__form');
 
     if (noticeTitleError === null && noticePriceError === null && noticeGuestsError === null) {
-      window.backend.upload(new FormData(form), function () {
-        noticeTitle.value = FormInnerData.TITLE;
-        noticePrice.value = FormInnerData.PRICE;
-        noticeGuests.selectedIndex = FormInnerData.CAPACITY;
-        noticeRooms.selectedIndex = FormInnerData.ROOMS;
-        notice.querySelector('textarea[name="description"]').value = FormInnerData.DESCRIPTION;
-        notice.querySelector('select[name="type"]').selectedIndex = FormInnerData.TYPE;
-        notice.querySelector('select[name="timein"]').selectedIndex = FormInnerData.TIMEIN;
-        notice.querySelector('select[name="timeout"]').selectedIndex = FormInnerData.TIMEOUT;
-        var features = notice.querySelectorAll('input[type=checkbox]');
-        for (var i = 0; i < features.length; ++i) {
-          features[i].checked = !FormInnerData.FEATURES_CHECKED_ARRAY[i];
-        }
-      }, function (errorMessage) {
+      window.backend.upload(new FormData(form), setInnerData, function (errorMessage) {
         if (form.querySelector('.' + DOWNLOAD_MESSAGE_CLASSNAME) === null) {
           var buttonSubmit = document.querySelector('button[class="form__submit"]');
           showDownloadErrorMessage('Ошибка при отправке объявления (' + errorMessage + ')', buttonSubmit);
@@ -201,6 +267,10 @@
         pins[i].addEventListener('mouseup', window.map.mapPinMainMouseupHandler);
       }
     }
+    noticeTitle.value = '';
+
+    setInnerData();
+
     removeErrorMessage(noticePrice, noticePrice.id + window.notice.NOTICE_ERROR_CLASS);
     removeErrorMessage(noticeTitle, noticeTitle.id + window.notice.NOTICE_ERROR_CLASS);
     removeErrorMessage(noticeGuests, noticeGuests.id + window.notice.NOTICE_ERROR_CLASS);
@@ -251,7 +321,8 @@
     noticeTitleCheckValidityHandler: noticeTitleCheckValidityHandler,
     noticeGuestsCheckErrorMessage: noticeGuestsCheckErrorMessage,
     formResetClickHandler: formResetClickHandler,
-    showDownloadErrorMessage: showDownloadErrorMessage
+    showDownloadErrorMessage: showDownloadErrorMessage,
+    setActiveForm: setActiveForm
   };
 })();
 

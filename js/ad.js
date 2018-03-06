@@ -17,6 +17,7 @@
   var ESC_KEYCODE = 27;
 
   var renderFeatures = function (liTemplate, ad, property) {
+    var ulFeaturesfragment = document.createDocumentFragment();
     var ulFeatures = ad.querySelector('.popup__features');
 
     window.utils.removeAllChildren(ulFeatures);
@@ -26,19 +27,21 @@
       var arrayFeatures = property.offer.features;
       arrayFeatures.forEach(function (item) {
         if (feature === item) {
-          ulFeatures.appendChild(liTemplateElement.cloneNode());
+          ulFeaturesfragment.appendChild(liTemplateElement.cloneNode());
         }
       });
     });
+    ulFeatures.appendChild(ulFeaturesfragment);
   };
 
   var renderPhotos = function (ad, property) {
+    var ulPicturesfragment = document.createDocumentFragment();
     var ulPictures = ad.querySelector('.popup__pictures');
     var arrayPhotos = property.offer.photos;
     arrayPhotos.forEach(function () {
-      ulPictures.appendChild(document.createElement('li'));
+      ulPicturesfragment.appendChild(document.createElement('li'));
     });
-    var liPhotos = ulPictures.querySelector('li');
+    var liPhotos = ulPicturesfragment.querySelector('li');
     for (var i = 0; i < property.offer.photos.length; ++i) {
       var photoSrc = document.createElement('img');
       photoSrc.src = property.offer.photos[i];
@@ -46,24 +49,29 @@
       photoSrc.height = Photo.Height;
       liPhotos.appendChild(photoSrc);
     }
+    ulPictures.appendChild(ulPicturesfragment);
+  };
+
+  var removeAd = function () {
+    var ad = document.querySelector('.map__card.popup');
+    if (ad !== null) {
+      ad.remove();
+    }
   };
 
   var buttonCloseClickHandler = function () {
-    document.querySelector('.map__card.popup').remove();
+    removeAd();
   };
 
   var adKeydownEscHandler = function (evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      document.querySelector('.map__card.popup').remove();
+      removeAd();
+      document.removeEventListener('keydown', adKeydownEscHandler);
     }
-    document.removeEventListener('keydown', adKeydownEscHandler);
   };
 
   var renderAd = function (property) {
-    var previousAd = document.querySelector('.map__card.popup');
-    if (previousAd !== null) {
-      document.querySelector('.map__card.popup').remove();
-    }
+    removeAd();
     var adTemplate = document.querySelector('template').content.querySelector('.map__card.popup');
     var ad = adTemplate.cloneNode(true);
 
@@ -91,6 +99,7 @@
   };
 
   window.ad = {
-    renderAd: renderAd
+    renderAd: renderAd,
+    removeAd: removeAd
   };
 })();

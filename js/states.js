@@ -1,20 +1,22 @@
 'use strict';
 
 (function () {
+
+  var fieldsets = document.querySelectorAll('fieldset');
+  var map = document.querySelector('.map');
+  var form = document.querySelector('.notice__form');
+
   var disableElements = function (elements, isDisable) {
     for (var i = 0; i < elements.length; ++i) {
       elements[i].disabled = isDisable;
     }
   };
-  var fieldsets = document.querySelectorAll('fieldset');
-  var map = document.querySelector('.map');
-  var form = document.querySelector('.notice__form');
 
   var triggerActiveState = function () {
     map.classList.remove('map--faded');
     form.classList.remove('notice__form--disabled');
     disableElements(fieldsets, false);
-    window.map.setActiveForm();
+    window.notice.setActiveForm();
   };
 
   var triggerInactiveState = function () {
